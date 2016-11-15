@@ -96,6 +96,10 @@ def createt(request):
     "', '" + postRequest['user'] + \
     "', '" + postRequest['date'] + "');"
     print sql
+    try:
+        cursor.execute(sql)
+    except MySQLdb.IntegrityError:
+        return JsonResponse({'code':3, 'response': 'integrity error'})
     db.commit()
     resp = "select * from Thread where id=" + str(cursor.lastrowid) + ";"
     cursor.execute(resp)
@@ -303,6 +307,10 @@ def detailst(request):
     cursor = db.cursor()
     sql = "select * from Thread where id='"+request.GET['thread'] + "';"
     print sql
+    try:
+        cursor.execute(sql)
+    except:
+        return JsonResponse({"code": 3, "response": "error"})
     results = cursor.fetchall()
     if not results:
         return JsonResponse({"code": 1, "response": "error"})
@@ -337,7 +345,11 @@ def detailst(request):
             forumNames = ["id", "name", "short_name", "user"]
             for forumRow in results1:
                 data["forum"] = dict(zip(forumNames, forumRow))      
-        
+        if "thread" in request.GET.getlist('related'):
+            return JsonResponse({"code": 3, "response": "error"})
+    if not data:
+        return JsonResponse({"code": 1, "response": "error"})
+    return success_response(data)
 
 def listpostsf(request):
     print ">>>>> entering listposts from forum"
@@ -346,7 +358,12 @@ def listpostsf(request):
         postRequest = json.loads(request.body)
     cursor = db.cursor()
     if ('since' in request.GET):
-        since = request.GET['since'] 
+        datesince = request.GET['since']
+        sql = "select date, dislikes, forum, id, isApproved, isDeleted, isEdited, isHighlighted, isSpam, likes, message, parent, thread, user from Posts where forum='"+ request.GET.get('forum', '') + "' and date>='"+ str(datesince) + "' "
+    else:
+        sql = "select date, dislikes, forum, id, isApproved, isDeleted, isEdited, isHighlighted, isSpam, likes, message, parent, thread, user from Posts where forum='"+request.GET.get('forum', '') + "' " 
+    order = request.GET.get('order', 'desc')
+    sql = sql + "order by date " + order 
     if ('limit' in request.GET):
         sql += " limit " + request.GET["limit"] 
     sql += ";"
@@ -781,5 +798,84 @@ def restorep(request):
     answer = {"post": postRequest["post"]}
     return success_response(answer)
 
+def updatep(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Posts set message='" + postRequest["message"] + "' where id=" + str(postRequest["post"]) + ";"
+    print sql
+    cursor.execute(sql)
+    db.commit()
+    sql2 = "select * from Posts where id=" + str(postRequest["post"]) + ";"
+    cursor.execute(sql2)
+    results = cursor.fetchall()
+    names = ["date", "dislikes", "forum", "id", "isApproved", "isDeleted", "isEdited", "isHighlighted", "isSpam", "likes", "message", "user", "thread", "parent"]
+    answer = []
+    for row in results:
+        answer.append(dict(zip(names, row)))
+    return success_response(answer)
 
+def votep(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = ''
+    if postRequest['vote'] == -1:
+        sql = "update Posts set dislikes = dislikes + 1 where id=" + str(postRequest["post"]) + ";"
+    if postRequest['vote'] == 1:
+        sql = "update Posts set likes = likes + 1 where id=" + str(postRequest["post"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    sql2 = "select * from Posts where id=" + str(postRequest["post"]) + ";"
+    cursor.execute(sql2)
+    results = cursor.fetchall()
+    names = ["date", "dislikes", "forum", "id", "isApproved", "isDeleted", "isEdited", "isHighlighted", "isSpam", "likes", "message", "user", "thread", "parent"]
+    answer = []
+    for row in results:
+        answer.append(dict(zip(names, row)))
+    return success_response(answer)
 
+def listfollowersu(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "select * from User as u inner join Follow as f on f.following = u.email where f.follower='" + request.GET["user"] + "' and u.id>" + request.GET.get("since_id", "0") + " order by u.id " + request.GET.get("order", "desc")
+    if "limit" in request.GET:
+        sql += " limit " + request.GET["limit"]
+    sql += ";" 
+    print sql
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    names = ["about", "email", "id", "isAnonymous", "name", "username"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        user2 = row[1]
+        sql2 = "select follower from Follow where following='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["followers"] = uans
+        sql2 = "select following from Follow where follower='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["following"] = uans
+        sql3 = "select subscription from Subscribe where subscriber='" + user2 + "';"
+        cursor.execute(sql3)
+        results = cursor.fetchall()
+        sans = []
+        for row in results:
+            sans.append(row[0])
+        data["subscriptions"] = sans
+        answer.append(data)
+    return success_response(answer)

@@ -346,8 +346,7 @@ def listpostsf(request):
         postRequest = json.loads(request.body)
     cursor = db.cursor()
     if ('since' in request.GET):
-        since = request.GET['since']
- 
+        since = request.GET['since'] 
     if ('limit' in request.GET):
         sql += " limit " + request.GET["limit"] 
     sql += ";"
