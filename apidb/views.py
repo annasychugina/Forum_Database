@@ -837,19 +837,45 @@ def votep(request):
         answer.append(dict(zip(names, row)))
     return success_response(answer)
 
-def listfollowersu(request):
+def listpostsu(request):
     postRequest = None
     if request.method == "POST":
         postRequest = json.loads(request.body)
     cursor = db.cursor()
-    sql = "select * from User as u inner join Follow as f on f.following = u.email where f.follower='" + request.GET["user"] + "' and u.id>" + request.GET.get("since_id", "0") + " order by u.id " + request.GET.get("order", "desc")
+    sql = "select * from Posts where user='" + request.GET["user"] + "'"
+    if "since" in request.GET:
+        sql += " and date>='" + request.GET["since"] + "'"
+    sql += " order by date " + request.GET.get("order","desc")
     if "limit" in request.GET:
         sql += " limit " + request.GET["limit"]
-    sql += ";" 
+    sql += ";"
     print sql
     cursor.execute(sql)
     results = cursor.fetchall()
-    names = ["about", "email", "id", "isAnonymous", "name", "username"]
+    names = ["date", "dislikes", "forum", "id", "isApproved", "isDeleted", "isEdited", "isHighlighted", "isSpam", "likes", "message", "user", "thread", "parent"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        data["date"] = str(data["date"])
+        data["points"] = data["likes"] - data["dislikes"]
+        answer.append(data)
+    return success_response(answer)
+
+def unfollowu(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    print postRequest
+    sql = "delete from Follow where follower='" + postRequest["follower"] + "' and following='" + postRequest["followee"] + "';"
+    print sql
+    cursor.execute(sql)
+    db.commit()
+    sql2 = "select * from User where email='" + postRequest["follower"] + "';"
+    print sql2
+    cursor.execute(sql2)
+    results = cursor.fetchall()
+    names = ["about", "email", "id", "isAnonymous", "name", "username", "user"]
     answer = []
     for row in results:
         data = dict(zip(names, row))
@@ -870,7 +896,7 @@ def listfollowersu(request):
         for row in results:
             uans.append(row[0])
         data["following"] = uans
-        sql3 = "select subscription from Subscribe where subscriber='" + user2 + "';"
+        sql3 = "select id from Thread where user='" + user2 + "';"
         cursor.execute(sql3)
         results = cursor.fetchall()
         sans = []
@@ -879,3 +905,188 @@ def listfollowersu(request):
         data["subscriptions"] = sans
         answer.append(data)
     return success_response(answer)
+
+def updateprofileu(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update User set about='" + postRequest["about"] + "', name='" + postRequest["name"] + "' where email='" + postRequest["user"] + "';"
+    print sql
+    cursor.execute(sql)
+    db.commit()
+    sql2 = "select * from User where email='" + postRequest["user"] + "';"
+    cursor.execute(sql2)
+    results = cursor.fetchall()
+    names = ["about", "email", "id", "isAnonymous", "name", "username", "user"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        user2 = row[1]
+        sql2 = "select follower from Follow where following='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["followers"] = uans
+        sql2 = "select following from Follow where follower='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["following"] = uans
+        sql3 = "select id from Thread where user='" + user2 + "';"
+        cursor.execute(sql3)
+        results = cursor.fetchall()
+        sans = []
+        for row in results:
+            sans.append(row[0])
+        data["subscriptions"] = sans
+        answer.append(data)
+    return success_response(answer)
+
+def closet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Thread set isClosed=1 where id=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    answer ={"thread": postRequest["thread"]} 
+    return success_response(answer)
+
+def opent(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Thread set isClosed=0 where id=" + str(postRequest["thread"]) + ";" 
+    cursor.execute(sql)
+    db.commit()
+    answer ={"thread": postRequest["thread"]} 
+    return success_response(answer)
+
+def removet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Thread set isDeleted=1 where id=" + str(postRequest["thread"]) + ";" 
+    cursor.execute(sql)
+    db.commit()
+    sql = "update Posts set isDeleted=1 where thread=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    answer ={"thread": postRequest["thread"]} 
+    return success_response(answer)
+
+def restoret(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Thread set isDeleted=0 where id=" + str(postRequest["thread"]) + ";" 
+    cursor.execute(sql)
+    db.commit() 
+    sql = "update Posts set isDeleted=0 where thread=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    answer ={"thread": postRequest["thread"]} 
+    return success_response(answer)
+
+def votet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = ''
+    if postRequest['vote'] == -1:
+        sql = "update Thread set dislikes = dislikes + 1 where id=" + str(postRequest["thread"]) + ";"
+    if postRequest['vote'] == 1:
+        sql = "update Thread set likes = likes + 1 where id=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    sql2 = "select id, isClosed, isDeleted, title, slug, date, message, forum, user, likes, dislikes from Thread where id=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql2)
+    results = cursor.fetchall()
+    names = ["id", "isClosed", "isDeleted", "title", "slug", "date", "message", "forum", "user", "likes", "dislikes"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        data["points"] = data["likes"] - data["dislikes"]
+        sql2 = "select count(*) from Posts where isDeleted=0 and thread=" + str(data["id"]) + ";"
+        cursor.execute(sql2)
+        resp = cursor.fetchall()
+        for row2 in resp:
+            data["posts"] = row2[0]
+        answer.append(data)
+    return success_response(answer)
+
+def subscribet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "insert into Subscribe values('" + postRequest["user"] + "', " + str(postRequest["thread"]) + ");"
+    try:
+        cursor.execute(sql)
+    except MySQLdb.IntegrityError:
+        return JsonResponse({"code": 3, "response": "IntegrityError"})
+    db.commit()
+    answer = {"thread": postRequest["thread"],
+              "user": postRequest["user"]}
+    return success_response(answer)
+
+def unsubscribet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "delete from Subscribe where subscriber='" + postRequest["user"] + "' and subscription=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    answer = {"thread": postRequest["thread"],
+              "user": postRequest["user"]}
+    return success_response(answer)
+
+def updatet(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "update Thread set message='" + postRequest["message"] + "', slug='" + postRequest["slug"] + "' where id=" + str(postRequest["thread"]) + ";"
+    cursor.execute(sql)
+    db.commit()
+    answer = []
+    results = cursor.fetchall()
+    names = ["id", "isClosed", "isDeleted", "title", "slug", "date", "message", "forum", "user", "likes", "dislikes"]
+    for row in results:
+        data = dict(zip(names, row))
+        data["points"] = data["likes"] - data["dislikes"]
+        sql2 = "select count(*) from Posts where isDeleted=0 and thread=" + str(data["id"]) + ";"
+        cursor.execute(sql2)
+        resp = cursor.fetchall()
+        for row2 in resp:
+            data["posts"] = row2[0]
+        answer.append(data)
+    return success_response(answer)
+
+def clear(request):
+    postRequest = None
+    cursor = db.cursor()
+    sql = "set FOREIGN_KEY_CHECKS = 0;"
+    cursor.execute(sql)
+    sql = "truncate User;"
+    cursor.execute(sql)
+    sql = "truncate Posts;"
+    cursor.execute(sql)
+    sql = "truncate Follow;"
+    db.commit()
+    answer = "OK"
+    return success_response(answer)
+
