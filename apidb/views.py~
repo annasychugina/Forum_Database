@@ -1090,20 +1090,3 @@ def clear(request):
     answer = "OK"
     return success_response(answer)
 
-def status(request):
-    postRequest = None
-    if request.method == "POST":
-        postRequest = json.loads(request.body)
-    results = cursor.fetchall()
-    for row in results:
-        tamount = row[0]
-    sql = "select count(*) from Forum;"
-    cursor.execute(sql)
-    results = cursor.fetchall()
-    for row in results:
-        pamount = row[0]
-    answer = {"user":uamount,
-              "thread": tamount,
-              "forum": famount,
-              "post": pamount}
-    return success_response(answer)

@@ -1078,15 +1078,40 @@ def updatet(request):
 
 def clear(request):
     postRequest = None
-    cursor = db.cursor()
-    sql = "set FOREIGN_KEY_CHECKS = 0;"
-    cursor.execute(sql)
-    sql = "truncate User;"
-    cursor.execute(sql)
-    sql = "truncate Posts;"
-    cursor.execute(sql)
-    sql = "truncate Follow;"
+    cursor = db.cursor()s
     db.commit()
     answer = "OK"
+    return success_response(answer)
+
+
+def status(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "select count(*) from User;"
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    for row in results:
+        uamount = row[0]
+    sql = "select count(*) from Thread;"
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    for row in results:
+        tamount = row[0]
+    sql = "select count(*) from Forum;"
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    for row in results:
+        famount = row[0]
+    sql = "select count(*) from Posts;"
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    for row in results:
+        pamount = row[0]
+    answer = {"user":uamount,
+              "thread": tamount,
+              "forum": famount,
+              "post": pamount}
     return success_response(answer)
 
