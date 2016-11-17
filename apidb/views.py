@@ -837,6 +837,97 @@ def votep(request):
         answer.append(dict(zip(names, row)))
     return success_response(answer)
 
+def listfollowersu(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "select * from User as u inner join Follow as f on f.following = u.email where f.follower='" + request.GET["user"] + "' and u.id>" + request.GET.get("since_id", "0") + " order by u.id " + request.GET.get("order", "desc")
+    if "limit" in request.GET:
+        sql += " limit " + request.GET["limit"]
+    sql += ";" 
+    print sql
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    names = ["about", "email", "id", "isAnonymous", "name", "username"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        user2 = row[1]
+        sql2 = "select follower from Follow where following='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["followers"] = uans
+        sql2 = "select following from Follow where follower='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["following"] = uans
+        sql3 = "select subscription from Subscribe where subscriber='" + user2 + "';"
+        cursor.execute(sql3)
+        results = cursor.fetchall()
+        sans = []
+        for row in results:
+            sans.append(row[0])
+        data["subscriptions"] = sans
+        answer.append(data)
+    return success_response(answer)  
+
+def listfollowingu(request):
+    postRequest = None
+    if request.method == "POST":
+        postRequest = json.loads(request.body)
+    cursor = db.cursor()
+    sql = "select * from User as u inner join Follow as f on f.following = u.email where f.follower='" + request.GET["user"] + "' and u.id>=" + request.GET.get("since_id", "-1") + " order by u.id " + request.GET.get("order", "desc")
+    if "limit" in request.GET:
+        sql += " limit " + request.GET["limit"]
+    sql += ";" 
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    names = ["about", "email", "id", "isAnonymous", "name", "username"]
+    answer = []
+    for row in results:
+        data = dict(zip(names, row))
+        user2 = row[1]
+        sql2 = "select follower from Follow where following='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["followers"] = uans
+        sql2 = "select following from Follow where follower='" + user2 + "';"
+        print sql2
+        cursor.execute(sql2)
+        results = cursor.fetchall()
+        uans = []
+        for row in results:
+            uans.append(row[0])
+        data["following"] = uans
+        sql3 = "select subscription from Subscribe where subscriber='" + user2 + "';"
+        cursor.execute(sql3)
+        results = cursor.fetchall()
+        sans = []
+        for row in results:
+            sans.append(row[0])
+        data["subscriptions"] = sans
+        answer.append(data)
+    sql = "select following from Follow where follower='"+ request.GET["user"] + "';"
+    print ":::::::::::::::::::", sql
+    cursor.execute(sql)
+    results = cursor.fetchall()
+    for row in results:
+        print ":::::::::::::   ", row[0]
+    return success_response(answer) 
+
 def listpostsu(request):
     postRequest = None
     if request.method == "POST":
@@ -1078,11 +1169,26 @@ def updatet(request):
 
 def clear(request):
     postRequest = None
-    cursor = db.cursor()s
+    cursor = db.cursor()
+    sql = "set FOREIGN_KEY_CHECKS = 0;"
+    cursor.execute(sql)
+    sql = "truncate User;"
+    cursor.execute(sql)
+    sql = "truncate Posts;"
+    cursor.execute(sql)
+    sql = "truncate Follow;"
+    cursor.execute(sql)
+    sql = "truncate Thread;"
+    cursor.execute(sql)
+    sql = "truncate Forum;"
+    cursor.execute(sql)
+    sql = "truncate Subscribe;"
+    cursor.execute(sql)
+    sql = "set FOREIGN_KEY_CHECKS = 1;"
+    cursor.execute(sql)
     db.commit()
     answer = "OK"
     return success_response(answer)
-
 
 def status(request):
     postRequest = None
@@ -1114,4 +1220,3 @@ def status(request):
               "forum": famount,
               "post": pamount}
     return success_response(answer)
-
