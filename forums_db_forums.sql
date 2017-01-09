@@ -27,8 +27,8 @@ CREATE TABLE `forums` (
   `name` varchar(45) DEFAULT NULL,
   `short_name` varchar(45) DEFAULT NULL,
   `users_email` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `shortname` (`short_name`)
+  PRIMARY KEY (`id`)
+  /*KEY `shortname` (`short_name`)*/
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

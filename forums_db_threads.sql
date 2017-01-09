@@ -36,10 +36,10 @@ CREATE TABLE `threads` (
   `posts` int(11) DEFAULT '0',
   `forums_short_name` varchar(45) NOT NULL,
   `users_email` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `forum` (`forums_short_name`),
-  KEY `user` (`users_email`),
-  KEY `date` (`date`)
+  PRIMARY KEY (`id`)
+  /*KEY `forum` (`forums_short_name`),*/
+  /*KEY `user` (`users_email`),*/
+  /*KEY `date` (`date`)*/
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

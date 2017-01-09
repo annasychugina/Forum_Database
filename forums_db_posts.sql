@@ -40,14 +40,14 @@ CREATE TABLE `posts` (
   `forums_short_name` varchar(45) NOT NULL,
   `users_name` varchar(45) DEFAULT NULL,
   `users_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user email` (`users_email`),
-  KEY `forum` (`forums_short_name`),
-  KEY `user name` (`users_name`),
-  KEY `user id` (`users_id`),
-  KEY `date` (`date`),
-  KEY `thread` (`threads_id`),
-  KEY `index8` (`users_email`,`users_name`)
+  PRIMARY KEY (`id`)
+  /*KEY `user email` (`users_email`),*/
+  /*KEY `forum` (`forums_short_name`),*/
+  /*KEY `user name` (`users_name`),*/
+  /*KEY `user id` (`users_id`),*/
+  /*KEY `date` (`date`),*/
+  /*KEY `thread` (`threads_id`),*/
+  /*KEY `index8` (`users_email`,`users_name`)*/
 ) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

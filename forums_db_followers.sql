@@ -24,9 +24,9 @@ DROP TABLE IF EXISTS `followers`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `followers` (
   `users_email_following` varchar(45) NOT NULL,
-  `users_email_follower` varchar(45) NOT NULL,
-  KEY `index2` (`users_email_following`),
-  KEY `index3` (`users_email_follower`)
+  `users_email_follower` varchar(45) NOT NULL
+  /*KEY `index2` (`users_email_following`),*/
+  /*KEY `index3` (`users_email_follower`)*/
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -24,10 +24,10 @@ DROP TABLE IF EXISTS `subscriptions`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `subscriptions` (
   `threads_id` int(11) NOT NULL,
-  `users_email` varchar(45) NOT NULL,
-  UNIQUE KEY `user_email_threads_id` (`threads_id`,`users_email`),
-  KEY `users_email` (`users_email`),
-  KEY `threads_id` (`threads_id`)
+  `users_email` varchar(45) NOT NULL
+  /*UNIQUE KEY `user_email_threads_id` (`threads_id`,`users_email`),*/
+  /*KEY `users_email` (`users_email`),*/
+  /*KEY `threads_id` (`threads_id`)*/
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
