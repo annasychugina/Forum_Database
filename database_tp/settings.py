@@ -79,9 +79,9 @@ WSGI_APPLICATION = 'database_tp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dbbase',
+        'NAME': 'mybasedbb',
         'USER': "root",
-        'PASSWORD': "annasychugina19945",
+        'PASSWORD': "",
         'HOST': "localhost",
     }
 }

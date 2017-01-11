@@ -40,7 +40,7 @@ CREATE TABLE `posts` (
   `forums_short_name` varchar(45) NOT NULL,
   `users_name` varchar(45) DEFAULT NULL,
   `users_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
   /*KEY `user email` (`users_email`),*/
   /*KEY `forum` (`forums_short_name`),*/
   /*KEY `user name` (`users_name`),*/

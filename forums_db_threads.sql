@@ -39,7 +39,8 @@ CREATE TABLE `threads` (
   PRIMARY KEY (`id`)
   /*KEY `forum` (`forums_short_name`),*/
   /*KEY `user` (`users_email`),*/
-  /*KEY `date` (`date`)*/
+  /*KEY `date` (`date`),*/
+  /*KEY `forum1` (`forums_short_name`,`date`)*/
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

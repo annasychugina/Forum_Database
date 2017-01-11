@@ -31,7 +31,7 @@ CREATE TABLE `users` (
   `isAnonymous` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
   /*UNIQUE KEY `index2` (`email`),*/
- /* KEY `index3` (`name`)*/
+  /*KEY `index3` (`name`)*/
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
